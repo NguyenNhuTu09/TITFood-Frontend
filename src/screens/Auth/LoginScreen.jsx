@@ -1,13 +1,13 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { TextInput, Button, Text, ActivityIndicator } from 'react-native-paper';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const LoginScreen = ({ navigation }) => {
-  const [loginIdentifier, setLoginIdentifier] = useState(''); // Có thể là email hoặc username
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading: authIsLoading } = useContext(AuthContext); // đổi tên isLoading để tránh xung đột
+  const { login, isLoading: authIsLoading } = useContext(AuthContext);
   const [localIsLoading, setLocalIsLoading] = useState(false);
-
 
   const handleLogin = async () => {
     if (!loginIdentifier || !password) {
@@ -17,7 +17,6 @@ const LoginScreen = ({ navigation }) => {
     setLocalIsLoading(true);
     try {
       await login(loginIdentifier, password);
-      // Navigation to MainApp will be handled by AppNavigator due to userToken change
     } catch (error) {
       Alert.alert('Đăng nhập thất bại', error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
@@ -26,75 +25,82 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Chào mừng đến TITFood!</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Tên đăng nhập hoặc Email"
-        value={loginIdentifier}
-        onChangeText={setLoginIdentifier}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Mật khẩu"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      { (authIsLoading || localIsLoading) ? (
-        <ActivityIndicator size="large" color="#tomato" style={styles.button}/>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Đăng Nhập</Text>
-        </TouchableOpacity>
-      )}
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>Chưa có tài khoản? Đăng ký ngay</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.inner}>
+        <Text variant="headlineLarge" style={styles.title}>
+          Chào mừng đến TITFood!
+        </Text>
+        <TextInput
+          label="Tên đăng nhập hoặc Email"
+          value={loginIdentifier}
+          onChangeText={setLoginIdentifier}
+          autoCapitalize="none"
+          mode="outlined"
+          style={styles.input}
+          left={<TextInput.Icon icon="account" />}
+        />
+        <TextInput
+          label="Mật khẩu"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          mode="outlined"
+          style={styles.input}
+          left={<TextInput.Icon icon="lock" />}
+        />
+        {(authIsLoading || localIsLoading) ? (
+          <ActivityIndicator animating={true} size="large" color="tomato" style={styles.loading} />
+        ) : (
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            style={styles.button}
+            buttonColor="tomato"
+            contentStyle={{ paddingVertical: 8 }}
+          >
+            Đăng Nhập
+          </Button>
+        )}
+        <Button
+          mode="text"
+          onPress={() => navigation.navigate('Register')}
+          textColor="tomato"
+        >
+          Chưa có tài khoản? Đăng ký ngay
+        </Button>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
     backgroundColor: '#fff',
+    justifyContent: 'center',
+  },
+  inner: {
+    padding: 24,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
+    fontWeight: 'bold',
     color: '#333',
   },
   input: {
-    height: 50,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    marginBottom: 18,
   },
   button: {
-    backgroundColor: 'tomato',
-    paddingVertical: 15,
+    marginBottom: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 20,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  linkText: {
-    color: 'tomato',
-    textAlign: 'center',
-    fontSize: 16,
+  loading: {
+    marginVertical: 16,
   },
 });
 
